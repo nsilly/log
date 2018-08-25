@@ -1,8 +1,8 @@
 {
   "name": "@nsilly/log",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "The nSilly Log package.",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
     "test": "jest",
     "build": "rimraf dist && ./node_modules/.bin/babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log,error_code.md,README.md --copy-files",
