@@ -1,6 +1,6 @@
 {
   "name": "@nsilly/log",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The nSilly Log package.",
   "main": "dist/index.js",
   "scripts": {
