@@ -1,6 +1,6 @@
 {
   "name": "@nsilly/log",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "The nSilly Log package.",
   "main": "dist/src/index.js",
   "scripts": {
@@ -48,6 +48,7 @@
   "dependencies": {
     "@nsilly/container": "^1.1.2",
     "@nsilly/support": "^1.1.5",
-    "winston": "^3.0.0"
+    "winston": "^3.0.0",
+    "winston-elasticsearch": "^0.7.4"
   }
 }

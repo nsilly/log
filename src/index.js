@@ -1,3 +1,4 @@
+export { ElasticSearchAdapter } from './app/Services/Log/Adapters/ElasticSearchAdapter';
 export { ConsoleAdapter } from './app/Services/Log/Adapters/ConsoleAdapter';
 export { FileAdapter } from './app/Services/Log/Adapters/FileAdapter';
 export { HttpTransporter } from './app/Services/Log/Adapters/HttpAdapter';
