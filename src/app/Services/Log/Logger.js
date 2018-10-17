@@ -1,7 +1,11 @@
 import winston from 'winston';
+import { StackTrace } from '../StackTrace';
+import { ColorfulConsole } from './Transporters/ColorfulConsole';
+import { App } from '@nsilly/container';
 
 export class Logger {
   constructor() {
+    this.shouldCaptureStackTrace = false;
     this.logger = winston.createLogger({
       transports: this.transports,
       levels: {
@@ -30,16 +34,37 @@ export class Logger {
     if (!Array.isArray(adapters)) {
       throw new Error('You should put an array of adapter');
     }
-    adapters.forEach(item => {
-      this.logger.add(item.getAdapter());
+
+    const transporters = adapters.map(item => item.getAdapter());
+
+    transporters.forEach(item => {
+      if (item instanceof ColorfulConsole) {
+        this.shouldCaptureStackTrace = true;
+        App.bind(StackTrace, StackTrace, true);
+      }
+      this.logger.add(item);
     });
   }
 
+  captureStackTrace() {
+    var orig = Error.prepareStackTrace;
+    var err = new Error();
+    Error.captureStackTrace(err);
+    var stack = err.stack;
+
+    Error.prepareStackTrace = orig;
+    // var data = stack.split('\n')[2].match(new RegExp(/.*\(((\/.*)\:(\d*)\:(\d*)\))/));
+    return stack;
+  }
+
   log(level, message, context) {
+    if (this.shouldCaptureStackTrace) {
+      App.make(StackTrace).setStack(this.captureStackTrace());
+    }
     if (context !== undefined) {
-      this.logger.log({ level, message, context });
+      this.logger.log(level, message, context);
     } else {
-      this.logger.log({ level, message });
+      this.logger.log(level, message);
     }
   }
 
@@ -51,7 +76,7 @@ export class Logger {
    * @return void
    */
   emergency(message, context) {
-    this.logger.log('emergency', message, context);
+    this.log('emergency', message, context);
   }
 
   /**
@@ -63,7 +88,7 @@ export class Logger {
    */
 
   alert(message, context) {
-    this.logger.log('alert', message, context);
+    this.log('alert', message, context);
   }
 
   /**
@@ -74,7 +99,7 @@ export class Logger {
    * @return void
    */
   critical(message, context) {
-    this.logger.log('critical', message, context);
+    this.log('critical', message, context);
   }
   /**
    * Log an error message to the logs.
@@ -84,7 +109,7 @@ export class Logger {
    * @return void
    */
   error(message, context) {
-    this.logger.log('error', message, context);
+    this.log('error', message, context);
   }
 
   /**
@@ -95,7 +120,7 @@ export class Logger {
    * @return void
    */
   warning(message, context) {
-    this.logger.log('warning', message, context);
+    this.log('warning', message, context);
   }
 
   /**
@@ -107,7 +132,7 @@ export class Logger {
    */
 
   notice(message, context) {
-    this.logger.log('notice', message, context);
+    this.log('notice', message, context);
   }
 
   /**
@@ -118,7 +143,7 @@ export class Logger {
    * @return void
    */
   info(message, context) {
-    this.logger.log('info', message, context);
+    this.log('info', message, context);
   }
 
   /**
@@ -129,6 +154,6 @@ export class Logger {
    * @return void
    */
   debug(message, context) {
-    this.logger.log('debug', message, context);
+    this.log('debug', message, context);
   }
 }

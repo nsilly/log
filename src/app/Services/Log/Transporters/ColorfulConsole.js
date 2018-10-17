@@ -12,6 +12,8 @@ import os from 'os';
 import colors from 'colors';
 import { LEVEL, MESSAGE } from 'triple-beam';
 import TransportStream from 'winston-transport';
+import { StackTrace } from '../../StackTrace';
+import { App } from '@nsilly/container';
 
 /**
  * Transport for outputting to the console.
@@ -26,7 +28,6 @@ export class ColorfulConsole extends TransportStream {
    */
   constructor(options = {}) {
     super(options);
-
     // Expose the name of this Transport on the prototype
     this.name = options.name || 'console';
     this.stderrLevels = this._stringArrayToSet(options.stderrLevels);
@@ -42,6 +43,10 @@ export class ColorfulConsole extends TransportStream {
    */
   log(info, callback) {
     setImmediate(() => this.emit('logged', info));
+    const stack = App.make(StackTrace).getStack();
+    const stack_data = stack.split('\n')[4].match(new RegExp(/.*\((((\/.*):(\d*):(\d*))\))/));
+
+    this.line = stack_data[2];
 
     let color = colors.green;
     // Remark: what if there is no raw...?
@@ -58,14 +63,18 @@ export class ColorfulConsole extends TransportStream {
         break;
     }
 
+    const transform = msg => {
+      return `${this.line}${this.eol}${JSON.stringify(JSON.parse(msg), null, 2)}`;
+    };
+
     // Remark: what if there is no raw...?
     if (this.stderrLevels[info[LEVEL]]) {
       if (console._stderr) {
         // Node.js maps `process.stderr` to `console._stderr`.
-        console._stderr.write(color(`${info[MESSAGE]}${this.eol}`));
+        console._stderr.write(color(`${transform(info[MESSAGE])}${this.eol}`));
       } else {
         // console.error adds a newline
-        console.error(color(info[MESSAGE]));
+        console.error(color(JSON.stringify(JSON.parse(info[MESSAGE]), null, 4)));
       }
 
       if (callback) {
@@ -76,10 +85,10 @@ export class ColorfulConsole extends TransportStream {
       if (console._stderr) {
         // Node.js maps `process.stderr` to `console._stderr`.
         // in Node.js console.warn is an alias for console.error
-        console._stderr.write(color(`${info[MESSAGE]}${this.eol}`));
+        console._stderr.write(color(`${transform(info[MESSAGE])}${this.eol}`));
       } else {
         // console.warn adds a newline
-        console.warn(color(info[MESSAGE]));
+        console.warn(color(JSON.stringify(JSON.parse(info[MESSAGE]), null, 4)));
       }
 
       if (callback) {
@@ -90,10 +99,10 @@ export class ColorfulConsole extends TransportStream {
 
     if (console._stdout) {
       // Node.js maps `process.stdout` to `console._stdout`.
-      console._stdout.write(color(`${info[MESSAGE]}${this.eol}`));
+      console._stdout.write(color(`${transform(info[MESSAGE])}${this.eol}`));
     } else {
       // console.log adds a newline.
-      console.log(color(info[MESSAGE]));
+      console.log(color(JSON.stringify(JSON.parse(info[MESSAGE]), null, 4)));
     }
 
     if (callback) {
